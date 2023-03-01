@@ -18,20 +18,21 @@ var ctx = canvas.getContext("2d");
 // buffer canvas for temporarily storing a copy of the DVD logo so that its colors can be modified 
 var buffer_canvas = document.createElement("canvas");
 // var buffer_canvas = document.getElementById("buffer-canvas"); 
-buffer_canvas.style.width = LOGO_W + 'px';
-buffer_canvas.style.height = LOGO_H + 'px';
+// buffer_canvas.style.width = LOGO_W + 'px';
+// buffer_canvas.style.height = LOGO_H + 'px';
 buffer_canvas.width = LOGO_W;
 buffer_canvas.height = LOGO_H;
 
 // The context to handle modifying the DVD logo.
 var buffer_ctx = buffer_canvas.getContext("2d", { willReadFrequently: true }); 
 
-// Image initializaon should be done here and not in the object because JavaScript is stupid
+// TODO: I need to figure out how to make this work 100% of the time. 
+// Sometimes the logo just disappears.
 var ORIGINAL_IMG = new Image();
 ORIGINAL_IMG.src = LOGO_FILE;
 buffer_ctx.drawImage(ORIGINAL_IMG,0,0,LOGO_W,LOGO_H);
 const ORIGINAL_IMG_DATA = buffer_ctx.getImageData(0,0,LOGO_W,LOGO_H); // Store original image data for color randomizer to use
-buffer_ctx.clearRect(0,0,this.w,this.h);
+console.log(ORIGINAL_IMG_DATA);
 
 let counter = document.getElementById("corner-bounce-counter");
 let corner_bounce_count = 0;
@@ -50,6 +51,8 @@ class DVDLogo {
 	}
 
 	setRandomColor(){
+		// Clear the buffer (I think moving this before everything else fixes disappearing bug)
+		buffer_ctx.clearRect(0,0,this.w,this.h);
 		// Store the bytes of the original image into an array 
 		this.img_data = ORIGINAL_IMG_DATA
 
@@ -71,9 +74,7 @@ class DVDLogo {
 
 		// Set this DVDLogo object's image to the new image
 		this.img.src = buffer_canvas.toDataURL();
-
-		// Clear the buffer of the image for the next call
-		buffer_ctx.clearRect(0,0,this.w,this.h);
+		this.printPos();
 	}
 
 	renderToCanvas(){
@@ -124,5 +125,7 @@ function update() {
 	// dvd_logo.printPos();
 }
 
-// Set up the game loop
-setInterval(update, 10);
+window.onload = function(){
+	// Set up the game loop
+	setInterval(update, 10);
+}
